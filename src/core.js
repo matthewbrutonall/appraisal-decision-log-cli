@@ -219,7 +219,7 @@ export function buildAppraisalMarkdown(report) {
     "",
     "## Supplied Notes",
     "",
-    markdownInline(input.suppliedNotes ?? "Not supplied"),
+    markdownLiteralBlock(input.suppliedNotes ?? "Not supplied"),
     "",
     "## Draft Decision Position For Review",
     "",
@@ -276,4 +276,12 @@ function markdownInline(value) {
     .replace(/\r/g, "\\r")
     .replace(/\n/g, "\\n")
     .replace(/\t/g, "\\t");
+}
+
+function markdownLiteralBlock(value) {
+  return String(value)
+    .replace(/\r\n?/g, "\n")
+    .split("\n")
+    .map((line) => `    ${line}`)
+    .join("\n");
 }

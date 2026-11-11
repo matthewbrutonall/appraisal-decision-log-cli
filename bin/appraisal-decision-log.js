@@ -6,6 +6,8 @@ import process from "node:process";
 import { buildAppraisalReport, INPUT_TEMPLATE, TOOL_VERSION } from "../src/core.js";
 import { buildOutputFiles, writeNewFile, writeOutputFiles } from "../src/output.js";
 
+const MAX_INPUT_BYTES = 256 * 1024;
+
 const HELP = `Appraisal Decision Log CLI ${TOOL_VERSION}
 
 Usage:
@@ -50,13 +52,23 @@ function rejectUnknown(options, allowed) {
   if (unknown.length) throw new Error(`Unknown option${unknown.length === 1 ? "" : "s"}: ${unknown.map((key) => `--${key}`).join(", ")}.`);
 }
 
-function readJson(inputPath) {
-  let text;
+async function readJson(inputPath) {
+  const stream = inputPath === "-" ? process.stdin : fs.createReadStream(path.resolve(inputPath));
+  const chunks = [];
+  let total = 0;
   try {
-    text = inputPath === "-" ? fs.readFileSync(0, "utf8") : fs.readFileSync(path.resolve(inputPath), "utf8");
+    for await (const chunk of stream) {
+      total += chunk.length;
+      if (total > MAX_INPUT_BYTES) {
+        throw new Error(`Input JSON exceeds the ${MAX_INPUT_BYTES / 1024} KiB limit.`);
+      }
+      chunks.push(chunk);
+    }
   } catch (error) {
+    if (error.message.startsWith("Input JSON exceeds")) throw error;
     throw new Error(`Cannot read input JSON: ${error.message}`);
   }
+  const text = Buffer.concat(chunks, total).toString("utf8");
   try {
     return JSON.parse(text);
   } catch (error) {
@@ -75,18 +87,18 @@ function runTemplate(options) {
   return writeNewFile(output, content);
 }
 
-function runDraft(options) {
+async function runDraft(options) {
   rejectUnknown(options, ["input", "output-dir"]);
   const inputPath = requireOption(options, "input");
   const outputDirectory = requireOption(options, "output-dir");
-  const raw = readJson(inputPath);
+  const raw = await readJson(inputPath);
   const report = buildAppraisalReport(raw, {
     source: { type: "json", input: inputPath === "-" ? "stdin" : path.resolve(inputPath) }
   });
   return writeOutputFiles(outputDirectory, buildOutputFiles(report));
 }
 
-function main() {
+async function main() {
   const argv = process.argv.slice(2);
   if (argv.length === 0 || argv.includes("--help")) {
     process.stdout.write(`${HELP}\n`);
@@ -104,7 +116,7 @@ function main() {
     return;
   }
   if (command === "draft") {
-    const result = runDraft(options);
+    const result = await runDraft(options);
     process.stdout.write(`Created ${result.paths.length} files in ${result.outputDirectory}\n`);
     for (const outputPath of result.paths) process.stdout.write(`- ${outputPath}\n`);
     return;
@@ -113,7 +125,7 @@ function main() {
 }
 
 try {
-  main();
+  await main();
 } catch (error) {
   process.stderr.write(`Error: ${error.message}\n`);
   process.exitCode = 1;

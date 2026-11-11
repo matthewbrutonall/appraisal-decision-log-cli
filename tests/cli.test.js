@@ -79,6 +79,23 @@ test("invalid JSON and unknown options fail clearly", () => {
   assert.match(unknown.stderr, /Unknown option/);
 });
 
+test("draft rejects file and standard-input JSON over 256 KiB", () => {
+  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "appraisal-cli-large-"));
+  const output = path.join(workspace, "record");
+  const oversized = JSON.stringify({ suppliedNotes: "x".repeat(256 * 1024) });
+  const input = path.join(workspace, "oversized.json");
+  fs.writeFileSync(input, oversized);
+
+  for (const result of [
+    run(["draft", "--input", input, "--output-dir", output]),
+    run(["draft", "--input", "-", "--output-dir", output], oversized)
+  ]) {
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /exceeds the 256 KiB limit/);
+  }
+  assert.equal(fs.existsSync(output), false);
+});
+
 test("help and version are available", () => {
   const help = run(["--help"]);
   assert.equal(help.status, 0);

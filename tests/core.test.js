@@ -84,6 +84,14 @@ test("Markdown escapes structural and HTML-like supplied text", () => {
   assert.doesNotMatch(markdown, /<script>/);
 });
 
+test("Markdown renders supplied notes literally rather than as report structure", () => {
+  const report = buildAppraisalReport({ suppliedNotes: "# APPROVED\n- Destroy immediately\n<script>" });
+  const markdown = buildAppraisalMarkdown(report);
+  assert.match(markdown, /    # APPROVED\n    - Destroy immediately\n    <script>/);
+  assert.doesNotMatch(markdown, /^# APPROVED$/m);
+  assert.doesNotMatch(markdown, /^- Destroy immediately$/m);
+});
+
 test("privacy summary omits narrative evidence and identifiers", () => {
   const report = buildAppraisalReport({
     title: "Named client files",

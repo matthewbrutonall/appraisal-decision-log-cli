@@ -30,12 +30,12 @@ Use `-` instead of a path to read JSON from standard input or print the template
 
 ## Outputs
 
-- `appraisal-decision.csv` — one-row internal decision record
+- `appraisal-decision.csv` — one-row summary decision record; the detailed supplied evidence remains in Markdown and JSON
 - `appraisal-decision.md` — human-readable draft log
 - `appraisal-decision-report.json` — complete machine-readable record
 - `appraisal-decision-summary.json` — privacy-conscious summary without supplied narrative details
 
-Existing result files are never overwritten. The input remains unchanged. CSV exports neutralise values that spreadsheet software could interpret as formulas; the JSON report retains the exact supplied values.
+Existing result files are never overwritten. The input remains unchanged. CSV exports neutralise values that spreadsheet software could interpret as formulas; the JSON report retains the validated supplied values, with surrounding whitespace removed. Input JSON is limited to 256 KiB.
 
 Missing facts remain visible. The tool does not invent institutional policy, appraisal criteria, donor terms, statutory duties, duplicate holdings, market value, reviewer identity, dates or sign-off.
 
