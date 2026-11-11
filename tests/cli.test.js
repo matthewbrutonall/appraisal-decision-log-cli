@@ -96,6 +96,23 @@ test("draft rejects file and standard-input JSON over 256 KiB", () => {
   assert.equal(fs.existsSync(output), false);
 });
 
+test("draft rejects malformed UTF-8 from files and standard input", () => {
+  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "appraisal-cli-utf8-"));
+  const output = path.join(workspace, "record");
+  const malformed = Buffer.concat([Buffer.from('{"title":"bad '), Buffer.from([0xff]), Buffer.from('"}')]);
+  const input = path.join(workspace, "malformed.json");
+  fs.writeFileSync(input, malformed);
+
+  for (const result of [
+    run(["draft", "--input", input, "--output-dir", output]),
+    run(["draft", "--input", "-", "--output-dir", output], malformed)
+  ]) {
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /not valid UTF-8/);
+  }
+  assert.equal(fs.existsSync(output), false);
+});
+
 test("help and version are available", () => {
   const help = run(["--help"]);
   assert.equal(help.status, 0);

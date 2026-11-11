@@ -92,7 +92,7 @@ export const INPUT_TEMPLATE = Object.freeze({
 
 export function parseAppraisalInput(raw) {
   let candidate = raw;
-  if (raw && typeof raw === "object" && !Array.isArray(raw) && "input" in raw) {
+  if (raw && typeof raw === "object" && !Array.isArray(raw) && Object.hasOwn(raw, "input")) {
     const wrapperFields = Object.keys(raw).filter((key) => key !== "input");
     if (wrapperFields.length) throw new Error(`Unknown wrapper field${wrapperFields.length === 1 ? "" : "s"}: ${wrapperFields.join(", ")}.`);
     candidate = raw.input;
@@ -101,7 +101,7 @@ export function parseAppraisalInput(raw) {
     throw new Error("Appraisal input must be a JSON object.");
   }
 
-  const unknown = Object.keys(candidate).filter((key) => !(key in FIELD_LIMITS));
+  const unknown = Object.keys(candidate).filter((key) => !Object.hasOwn(FIELD_LIMITS, key));
   if (unknown.length) throw new Error(`Unknown input field${unknown.length === 1 ? "" : "s"}: ${unknown.join(", ")}.`);
 
   const input = {};

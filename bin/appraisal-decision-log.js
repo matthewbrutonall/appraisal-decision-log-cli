@@ -3,6 +3,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
+import { TextDecoder } from "node:util";
 import { buildAppraisalReport, INPUT_TEMPLATE, TOOL_VERSION } from "../src/core.js";
 import { buildOutputFiles, writeNewFile, writeOutputFiles } from "../src/output.js";
 
@@ -68,7 +69,12 @@ async function readJson(inputPath) {
     if (error.message.startsWith("Input JSON exceeds")) throw error;
     throw new Error(`Cannot read input JSON: ${error.message}`);
   }
-  const text = Buffer.concat(chunks, total).toString("utf8");
+  let text;
+  try {
+    text = new TextDecoder("utf-8", { fatal: true }).decode(Buffer.concat(chunks, total));
+  } catch {
+    throw new Error("Input is not valid UTF-8.");
+  }
   try {
     return JSON.parse(text);
   } catch (error) {

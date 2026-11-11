@@ -26,6 +26,10 @@ test("requires a starter title, reference or supplied notes", () => {
 
 test("strict validation rejects unknown fields, invalid types, actions and silent truncation", () => {
   assert.throws(() => parseAppraisalInput({ title: "Item", inventedApproval: true }), /Unknown input field/);
+  for (const key of ["constructor", "toString", "__proto__"]) {
+    const candidate = JSON.parse(`{"title":"Item","${key}":"hidden"}`);
+    assert.throws(() => parseAppraisalInput(candidate), /Unknown input field/);
+  }
   assert.throws(() => parseAppraisalInput({ input: { title: "Item" }, approved: true }), /Unknown wrapper field/);
   assert.throws(() => parseAppraisalInput({ title: 42 }), /must be text/);
   assert.throws(() => parseAppraisalInput({ title: "Item", proposedAction: "destroy" }), /must be one of/);
