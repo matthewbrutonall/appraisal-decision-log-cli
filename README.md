@@ -1,5 +1,7 @@
 # Appraisal Decision Log CLI
 
+![An appraisal decision log marked Proposed, with approval awaiting sign-off](assets/appraisal-decision-log.png)
+
 Archival appraisal is the structured assessment of records against collecting policy, evidential and informational value, legal or administrative requirements, research value, duplication, condition, format risks and other supplied evidence.
 
 This command-line tool turns that evidence into a consistent draft decision log. It is useful for archivists and records managers who need to document why material is being considered for retention, sampling, transfer, further review or disposal—and which facts or approvals are still missing.
