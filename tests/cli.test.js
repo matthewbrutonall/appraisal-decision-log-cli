@@ -113,6 +113,33 @@ test("draft rejects malformed UTF-8 from files and standard input", () => {
   assert.equal(fs.existsSync(output), false);
 });
 
+test("draft rejects escaped unpaired surrogates without creating output", () => {
+  const output = path.join(fs.mkdtempSync(path.join(os.tmpdir(), "appraisal-cli-surrogate-")), "record");
+  const result = run(["draft", "--input", "-", "--output-dir", output], '{"title":"bad \\ud800 title"}');
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /unpaired Unicode surrogates/);
+  assert.equal(fs.existsSync(output), false);
+});
+
+test("draft rejects directory and named-pipe input paths", (t) => {
+  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "appraisal-cli-special-"));
+  const output = path.join(workspace, "record");
+  const directory = run(["draft", "--input", workspace, "--output-dir", output]);
+  assert.equal(directory.status, 1);
+  assert.match(directory.stderr, /must be a regular file/);
+
+  const fifo = path.join(workspace, "input.fifo");
+  const created = spawnSync("mkfifo", [fifo], { encoding: "utf8" });
+  if (created.error?.code === "ENOENT" || created.status !== 0) {
+    t.skip("Named pipes are unavailable on this platform.");
+    return;
+  }
+  const pipe = run(["draft", "--input", fifo, "--output-dir", output]);
+  assert.equal(pipe.status, 1);
+  assert.match(pipe.stderr, /must be a regular file/);
+  assert.equal(fs.existsSync(output), false);
+});
+
 test("help and version are available", () => {
   const help = run(["--help"]);
   assert.equal(help.status, 0);

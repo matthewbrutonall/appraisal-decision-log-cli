@@ -26,7 +26,7 @@ node bin/appraisal-decision-log.js draft \
   --output-dir appraisal-record
 ```
 
-Use `-` instead of a path to read JSON from standard input or print the template to standard output.
+Use `-` instead of a path to read JSON from standard input or print the template to standard output. A JSON input path must point to a regular file; use standard input for a pipe.
 
 ## Outputs
 

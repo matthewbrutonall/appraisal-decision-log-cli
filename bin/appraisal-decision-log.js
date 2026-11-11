@@ -54,6 +54,15 @@ function rejectUnknown(options, allowed) {
 }
 
 async function readJson(inputPath) {
+  if (inputPath !== "-") {
+    let stats;
+    try {
+      stats = fs.statSync(path.resolve(inputPath));
+    } catch (error) {
+      throw new Error(`Cannot read input JSON: ${error.message}`);
+    }
+    if (!stats.isFile()) throw new Error("Input JSON path must be a regular file; use - for standard input.");
+  }
   const stream = inputPath === "-" ? process.stdin : fs.createReadStream(path.resolve(inputPath));
   const chunks = [];
   let total = 0;

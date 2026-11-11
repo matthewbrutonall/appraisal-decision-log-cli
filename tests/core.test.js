@@ -35,6 +35,9 @@ test("strict validation rejects unknown fields, invalid types, actions and silen
   assert.throws(() => parseAppraisalInput({ title: "Item", proposedAction: "destroy" }), /must be one of/);
   assert.throws(() => parseAppraisalInput({ title: "x".repeat(FIELD_LIMITS.title + 1) }), /exceeds 300/);
   assert.throws(() => parseAppraisalInput({ title: "invalid\0title" }), /null characters/);
+  assert.throws(() => parseAppraisalInput({ title: "bad \ud800 title" }), /unpaired Unicode surrogates/);
+  assert.throws(() => parseAppraisalInput({ title: "bad \udc00 title" }), /unpaired Unicode surrogates/);
+  assert.equal(parseAppraisalInput({ title: "valid \ud83d\ude80 title" }).title, "valid \ud83d\ude80 title");
 });
 
 test("blank strings remain missing and all documented actions are accepted", () => {

@@ -113,6 +113,9 @@ export function parseAppraisalInput(raw) {
     if (!trimmed) continue;
     if (trimmed.length > max) throw new Error(`Input field ${key} exceeds ${max} characters.`);
     if (trimmed.includes("\0")) throw new Error(`Input field ${key} cannot contain null characters.`);
+    if ([...trimmed].some((character) => character.codePointAt(0) >= 0xd800 && character.codePointAt(0) <= 0xdfff)) {
+      throw new Error(`Input field ${key} cannot contain unpaired Unicode surrogates.`);
+    }
     input[key] = trimmed;
   }
 
