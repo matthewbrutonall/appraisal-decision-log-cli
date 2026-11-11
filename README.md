@@ -8,6 +8,14 @@ This command-line tool turns that evidence into a consistent draft decision log.
 
 The tool records a **proposed** action. It does not appraise material by itself and never turns that proposal into approval, sign-off or authority to retain, destroy, sell or transfer records.
 
+## Install with your AI agent
+
+Copy and paste this into your agent:
+
+```text
+Install the Appraisal Decision Log CLI from https://github.com/matthewbrutonall/appraisal-decision-log-cli on my computer. Check that Node.js 20 or later is available, install the GitHub repository as a command-line tool, and verify that `appraisal-decision-log --version` works. Tell me what you installed and how to run it. Do not run it on my records yet.
+```
+
 ## Requirements
 
 - Node.js 20 or later
